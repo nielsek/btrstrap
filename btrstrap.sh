@@ -56,7 +56,7 @@ mount /dev/${disk}2 /tmp/btrroot/boot
 cd /tmp/btrroot
 
 echo "*BTRSTRAP* Debootstrapping the OS"
-debootstrap --foreign --include="\
+debootstrap --include="\
     bash-completion,\
     bind9-host,\
     btrfs-tools,\
