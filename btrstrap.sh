@@ -102,8 +102,20 @@ nameserver 8.8.4.4" > etc/resolv.conf
 echo "Etc/UTC" > etc/timezone
 chroot . dpkg-reconfigure -f noninteractive tzdata
 
-echo "*BTRSTRAP* Running grub-install"
+echo "*BTRSTRAP* Setting up grub"
 grub-install --target=i386-pc --recheck --debug --boot-directory=/tmp/btrroot/boot /dev/${disk}
+
+kversion=`ls -1 boot/vmlinuz-* | tail -n1 | rev | cut -d/ -f1 | rev | sed "s/vmlinuz-//g"`
+
+echo "set default=0
+set timeout=5
+menuentry 'Ubuntu ${suite} ${kversion}' {
+  insmod btrfs
+  search --label --set=root btrpool
+  linux   /boot/vmlinuz-$kversion root=/dev/disk/by-label/btrpool rootflags=subvol=${suite}-root ro
+  initrd  /boot/initrd.img-$kversion
+}" > boot/grub/grub.cfg
+
 
 echo "Enter a password for root:"
 chroot . passwd
