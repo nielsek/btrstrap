@@ -45,16 +45,16 @@ mkfs.ext2 /dev/${disk}2
 mkfs.btrfs -L btrpool /dev/${disk}3
 
 echo "*BTRSTRAP* Creating root subvolume and boot"
-mkdir /tmp/btrroot
-mount /dev/${disk}3 /tmp/btrroot
-cd /tmp/btrroot
+mkdir /mnt/btrroot
+mount /dev/${disk}3 /mnt/btrroot
+cd /mnt/btrroot
 btrfs subvolume create ${suite}-root 
 cd ..
 umount /dev/${disk}3
-mount -o subvol=${suite}-root /dev/${disk}3 /tmp/btrroot
-mkdir /tmp/btrroot/boot
-mount /dev/${disk}2 /tmp/btrroot/boot
-cd /tmp/btrroot
+mount -o subvol=${suite}-root /dev/${disk}3 /mnt/btrroot
+mkdir /mnt/btrroot/boot
+mount /dev/${disk}2 /mnt/btrroot/boot
+cd /mnt/btrroot
 
 echo "*BTRSTRAP* Debootstrapping the OS"
 debootstrap --include="\
@@ -103,7 +103,7 @@ echo "Etc/UTC" > etc/timezone
 chroot . dpkg-reconfigure -f noninteractive tzdata
 
 echo "*BTRSTRAP* Setting up grub"
-grub-install --target=i386-pc --recheck --debug --boot-directory=/tmp/btrroot/boot /dev/${disk}
+grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
 
 kversion=`ls -1 boot/vmlinuz-* | tail -n1 | rev | cut -d/ -f1 | rev | sed "s/vmlinuz-//g"`
 
