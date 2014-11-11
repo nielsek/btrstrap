@@ -108,6 +108,13 @@ grub-install --target=i386-pc --recheck --debug --boot-directory=/tmp/btrroot/bo
 echo "Enter a password for root:"
 chroot . passwd
 
+echo "Wanna enter the new OS, before it gets unmounted? [Y/n]"
+read choice
+
+if [ "$choice" != "n" ] && [ "$choice" != "N" ]; then
+  chroot .
+fi
+
 echo "*BTRSTRAP* Syncing and unmounting disk"
 cd ..
 sync
