@@ -24,9 +24,9 @@ echo "Attempting to btrstrap ${suite}/${arch} on /dev/$disk - CTRL+C now to exit
 read horse
 
 echo "*BTRSTRAP* Resolving dependencies"
-if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" ]; then
+if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" -o -z "`dpkg -l curl`" ]; then
   apt-get update
-  apt-get install btrfs-tools debootstrap -y
+  apt-get install btrfs-tools debootstrap curl -y
 fi
 
 echo "*BTRSTRAP* Wiping $disk"
@@ -57,6 +57,9 @@ mount /dev/${disk}2 /mnt/btrroot/boot
 cd /mnt/btrroot
 
 echo "*BTRSTRAP* Debootstrapping the OS"
+repolist=`curl -s http://mirrors.ubuntu.com/mirrors.txt 2>/dev/null || echo "http://archive.ubuntu.com/ubuntu/"`
+repo=`echo "$repolist" | head -n1`
+
 debootstrap --include="\
     bash-completion,\
     bind9-host,\
@@ -83,7 +86,7 @@ debootstrap --include="\
     sudo,\
     telnet,\
     vim,\
-" --variant=minbase --arch $arch $suite . http://archive.ubuntu.com/ubuntu
+" --variant=minbase --arch $arch $suite . $repo
 
 echo "*BTRSTRAP* Creating configs"
 echo "$hostname" > etc/hostname
@@ -101,6 +104,10 @@ nameserver 8.8.4.4" > etc/resolv.conf
 
 echo "Etc/UTC" > etc/timezone
 chroot . dpkg-reconfigure -f noninteractive tzdata
+
+echo "deb mirror://mirrors.ubuntu.com/mirrors.txt $suite main
+deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-updates main
+deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-security main" > etc/apt/sources.list
 
 echo "*BTRSTRAP* Setting up grub"
 grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
