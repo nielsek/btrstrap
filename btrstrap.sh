@@ -3,8 +3,8 @@
 arch="amd64"
 suite="trusty"
 
-while getopts "h:d:" _opt; do
-    case "$_opt" in
+while getopts "h:d:" opt; do
+    case "$opt" in
         h) hostname="$OPTARG" ;;
         d) disk="$OPTARG" ;;
     esac
@@ -130,7 +130,7 @@ fi
 echo "*BTRSTRAP* Syncing and unmounting disk"
 cd ..
 sync
-umount /dev/sda2
-umount /dev/sda3
+umount /dev/${disk}2
+umount /dev/${disk}3
 
 echo "All done"
