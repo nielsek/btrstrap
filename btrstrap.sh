@@ -20,7 +20,7 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-echo "Attempting to btrstrap $image on /dev/$disk - CTRL+C now to exit"
+echo "Attempting to btrstrap ${suite}/${arch} on /dev/$disk - CTRL+C now to exit"
 read horse
 
 echo "*BTRSTRAP* Resolving dependencies"
