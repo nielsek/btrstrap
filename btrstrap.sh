@@ -20,6 +20,15 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+test -e /sys/firmware/efi && efi=1 || efi=0
+if [ "$efi" = 1 ]; then
+  echo "detected EFI"
+  grubdeb="grub-efi"
+else
+  echo "detected BIOS"
+  grubdeb="grub-pc"
+fi
+
 echo "Attempting to btrstrap ${suite}/${arch} on /dev/$disk - CTRL+C now to exit"
 read horse
 
@@ -68,7 +77,7 @@ debootstrap --include="\
     bzip2,\
     cron,\
     curl,\
-    grub-pc,\
+    ${grubdeb},\
     iptables,\
     iputils-ping,\
     less,\
@@ -110,7 +119,11 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-updates main
 deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-security main" > etc/apt/sources.list
 
 echo "*BTRSTRAP* Setting up grub"
-grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
+if [ "$efi" = 1 ]; then
+  grub-install --target=x86_64-efi --recheck --debug --efi-directory=/mnt/btrroot/boot/efi /dev/${disk}
+else
+  grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
+fi
 
 kversion=`ls -1 boot/vmlinuz-* | tail -n1 | rev | cut -d/ -f1 | rev | sed "s/vmlinuz-//g"`
 
