@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# TODO: handle and mount /boot/efi
+
 arch="amd64"
 suite="trusty"
 
@@ -120,7 +122,7 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-security main" > etc/apt/sour
 
 echo "*BTRSTRAP* Setting up grub"
 if [ "$efi" = 1 ]; then
-  grub-install --target=x86_64-efi --recheck --debug --efi-directory=/mnt/btrroot/boot/efi /dev/${disk}
+  grub-install --directory=/mnt/btrroot/usr/lib/grub/x86_64-efi --target=x86_64-efi --recheck --debug --efi-directory=/mnt/btrroot/boot/efi /dev/${disk}
 else
   grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
 fi
