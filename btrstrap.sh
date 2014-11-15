@@ -41,7 +41,8 @@ if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" -o -z "`dpkg -l cu
 fi
 
 echo "*BTRSTRAP* Wiping $disk"
-dd if=/dev/zero of=/dev/${disk} bs=128k count=400
+sgdisk -Z /dev/${disk}
+dd if=/dev/zero of=/dev/${disk} bs=1K count=2M
 
 echo "*BTRSTRAP* Creating new layout"
 parted /dev/${disk} mktable gpt
@@ -59,7 +60,7 @@ echo "*BTRSTRAP* Creating root subvolume and boot"
 mkdir /mnt/btrroot
 mount /dev/${disk}3 /mnt/btrroot
 cd /mnt/btrroot
-btrfs subvolume create ${suite}-root 
+btrfs subvolume create ${suite}-root
 cd ..
 umount /dev/${disk}3
 mount -o subvol=${suite}-root /dev/${disk}3 /mnt/btrroot
