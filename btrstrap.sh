@@ -1,7 +1,7 @@
 #!/bin/sh
 
 arch="amd64"
-suite="utopic"
+suite="trusty"
 
 while getopts "h:d:" opt; do
     case "$opt" in
@@ -94,6 +94,7 @@ debootstrap --include="\
     curl,\
     isc-dhcp-client,\
     ${grubdeb},\
+    iptables,\
     iputils-ping,\
     less,\
     linux-image-generic,\
@@ -101,7 +102,6 @@ debootstrap --include="\
     lsof,\
     man-db,\
     net-tools,\
-    nftables,\
     ntp,\
     openssh-server,\
     parted,\
