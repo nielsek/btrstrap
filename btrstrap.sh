@@ -80,6 +80,7 @@ debootstrap --include="\
     bzip2,\
     cron,\
     curl,\
+    isc-dhcp-client,\
     ${grubdeb},\
     iptables,\
     iputils-ping,\
