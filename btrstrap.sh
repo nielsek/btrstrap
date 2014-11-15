@@ -33,9 +33,9 @@ echo "Attempting to btrstrap ${suite}/${arch} on /dev/$disk - CTRL+C now to exit
 read horse
 
 echo "*BTRSTRAP* Resolving dependencies"
-if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" -o -z "`dpkg -l curl`" ]; then
+if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" -o -z "`dpkg -l curl`" -o -z "`dpkg -l gdisk`" ]; then
   apt-get update
-  apt-get install btrfs-tools debootstrap curl -y
+  apt-get install btrfs-tools debootstrap curl gdisk -y
 fi
 
 echo "*BTRSTRAP* Wiping $disk"
