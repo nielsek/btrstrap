@@ -117,9 +117,9 @@ echo "*BTRSTRAP* Creating configs"
 echo "$hostname" > etc/hostname
 
 echo "LABEL=btrpool / btrfs subvol=${suite}-root 0 0
-/dev/sda2 /boot ext2 defaults 0 2" > etc/fstab
+/dev/${disk}2 /boot ext2 defaults 0 2" > etc/fstab
 if [ "$efi" = 1 ]; then
-  echo "/dev/sda1 /boot/efi vfat defaults 0 1" >> etc/fstab
+  echo "/dev/${disk}1 /boot/efi vfat defaults 0 1" >> etc/fstab
 fi
 
 echo "auto lo
