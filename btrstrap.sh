@@ -123,6 +123,9 @@ LANGUAGE="en_US:en"' > etc/default/locale
 echo "Etc/UTC" > etc/timezone
 chroot . dpkg-reconfigure -f noninteractive tzdata
 
+echo 'APT::Install-Recommends "0";
+APT::Install-Suggests "0";' > etc/apt/apt.conf.d/99no-install-recommends
+
 echo "deb mirror://mirrors.ubuntu.com/mirrors.txt $suite main
 deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-updates main
 deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-security main" > etc/apt/sources.list
