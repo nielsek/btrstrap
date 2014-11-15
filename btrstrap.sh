@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# TODO: handle and mount /boot/efi
-
 arch="amd64"
 suite="trusty"
 
@@ -46,13 +44,23 @@ dd if=/dev/zero of=/dev/${disk} bs=1K count=2M
 
 echo "*BTRSTRAP* Creating new layout"
 parted /dev/${disk} mktable gpt
-parted -a optimal /dev/${disk} mkpart primary 0% 1007kB i
-parted -a optimal /dev/${disk} mkpart primary 2048kB 501759kB i
-parted -a optimal /dev/${disk} mkpart primary 501760kB 100% i
-parted /dev/${disk} set 1 bios_grub on
-parted /dev/${disk} set 2 boot on
+if [ "$efi" = 1 ]; then
+  parted -a optimal /dev/${disk} mkpart primary 0% 501759kB i
+  parted -a optimal /dev/${disk} mkpart primary 501760kB 1003519kB i
+  parted -a optimal /dev/${disk} mkpart primary 1003520kB 100% i
+  parted /dev/${disk} set 1 boot on
+else
+  parted -a optimal /dev/${disk} mkpart primary 0% 1007kB i
+  parted -a optimal /dev/${disk} mkpart primary 2048kB 501759kB i
+  parted -a optimal /dev/${disk} mkpart primary 501760kB 100% i
+  parted /dev/${disk} set 1 bios_grub on
+  parted /dev/${disk} set 2 boot on
+fi
 
 echo "*BTRSTRAP* Formatting"
+if [ "$efi" = 1 ]; then
+  mkfs.vfat /dev/${disk}1
+fi
 mkfs.ext2 /dev/${disk}2
 mkfs.btrfs -L btrpool /dev/${disk}3
 
@@ -66,6 +74,10 @@ umount /dev/${disk}3
 mount -o subvol=${suite}-root /dev/${disk}3 /mnt/btrroot
 mkdir /mnt/btrroot/boot
 mount /dev/${disk}2 /mnt/btrroot/boot
+if [ "$efi" = 1 ]; then
+  mkdir /mnt/btrroot/boot/efi
+  mount /dev/${disk}1 /mnt/btrroot/boot/efi
+fi
 cd /mnt/btrroot
 
 echo "*BTRSTRAP* Debootstrapping the OS"
@@ -104,7 +116,11 @@ debootstrap --include="\
 echo "*BTRSTRAP* Creating configs"
 echo "$hostname" > etc/hostname
 
-echo "LABEL=btrpool / btrfs subvol=${suite}-root,errors=remount-ro 0 0" > etc/fstab
+echo "LABEL=btrpool / btrfs subvol=${suite}-root 0 0
+/dev/sda2 /boot ext2 defaults 0 2" > etc/fstab
+if [ "$efi" = 1 ]; then
+  echo "/dev/sda1 /boot/efi vfat defaults 0 1" >> etc/fstab
+fi
 
 echo "auto lo
 iface lo inet loopback
@@ -131,23 +147,23 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-updates main
 deb mirror://mirrors.ubuntu.com/mirrors.txt $suite-security main" > etc/apt/sources.list
 
 echo "*BTRSTRAP* Setting up grub"
+sed -i"" "s/quiet splash//g" etc/default/grub
+
+mount -o bind /proc ./proc
+mount -o bind /dev ./dev
+mount -o bind /sys ./sys
+
 if [ "$efi" = 1 ]; then
-  grub-install --directory=/mnt/btrroot/usr/lib/grub/x86_64-efi --target=x86_64-efi --recheck --debug --efi-directory=/mnt/btrroot/boot/efi /dev/${disk}
+  chroot . grub-install --target=x86_64-efi --bootloader-id=btrstrap_grub --efi-directory=/boot/efi --recheck --debug
 else
-  grub-install --target=i386-pc --recheck --debug --boot-directory=/mnt/btrroot/boot /dev/${disk}
+  chroot . grub-install --target=i386-pc --boot-directory=/boot --recheck --debug /dev/${disk}
 fi
 
-kversion=`ls -1 boot/vmlinuz-* | tail -n1 | rev | cut -d/ -f1 | rev | sed "s/vmlinuz-//g"`
+chroot . grub-mkconfig -o /boot/grub/grub.cfg
 
-echo "set default=0
-set timeout=5
-menuentry 'Ubuntu ${suite} ${kversion}' {
-  insmod btrfs
-  search --label --set=root btrpool
-  linux   /boot/vmlinuz-$kversion root=/dev/disk/by-label/btrpool rootflags=subvol=${suite}-root ro
-  initrd  /boot/initrd.img-$kversion
-}" > boot/grub/grub.cfg
-
+umount ./proc
+umount ./dev
+umount ./sys
 
 echo "Enter a password for root:"
 chroot . passwd
@@ -162,6 +178,9 @@ fi
 echo "*BTRSTRAP* Syncing and unmounting disk"
 cd ..
 sync
+if [ "$efi" = 1 ]; then
+  umount /dev/${disk}1
+fi
 umount /dev/${disk}2
 umount /dev/${disk}3
 
