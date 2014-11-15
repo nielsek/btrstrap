@@ -115,6 +115,11 @@ iface eth0 inet dhcp" > etc/network/interfaces
 echo "nameserver 8.8.8.8
 nameserver 8.8.4.4" > etc/resolv.conf
 
+chroot . /bin/bash -c "export LANGUAGE=en_US.UTF-8; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; locale-gen en_US.UTF-8; dpkg-reconfigure locales"
+
+echo 'LANG="en_US.UTF-8"
+LANGUAGE="en_US:en"' > etc/default/locale
+
 echo "Etc/UTC" > etc/timezone
 chroot . dpkg-reconfigure -f noninteractive tzdata
 
