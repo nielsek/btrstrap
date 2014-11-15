@@ -4,13 +4,13 @@ arch="amd64"
 suite="trusty"
 
 while getopts "h:d:" opt; do
-    case "$opt" in
-        h) hostname="$OPTARG" ;;
-        d) disk="$OPTARG" ;;
-    esac
+  case "$opt" in
+    h) hostname="$OPTARG" ;;
+    d) disk="$OPTARG" ;;
+  esac
 done
 
-if [ -z "$disk" ]; then
+if [ -z "$hostname" -o -z "$disk" ]; then
     echo "Usage: $0 -h <hostname> -d <disk>"
     exit 1
 fi
