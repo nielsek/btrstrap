@@ -2,15 +2,18 @@
 
 suite="trusty"
 
-while getopts "h:d:" opt; do
+while getopts "h:d:s:" opt; do
   case "$opt" in
     h) hostname="$OPTARG" ;;
     d) disk="$OPTARG" ;;
+    s) suite="$OPTARG" ;;
   esac
 done
 
 if [ -z "$hostname" -o -z "$disk" ]; then
     echo "Usage: $0 -h <hostname> -d <disk>"
+    echo "Optional:"
+    echo "          -s <suite> (trusty)"
     exit 1
 fi
 
