@@ -1,6 +1,5 @@
 #!/bin/sh
 
-arch="amd64"
 suite="trusty"
 
 while getopts "h:d:" opt; do
@@ -18,6 +17,19 @@ fi
 if [ "$(id -u)" != "0" ]; then
   echo "Run as root"
   exit 1
+fi
+
+arch=""
+exec 1> /dev/null
+grep flags /proc/cpuinfo | grep " lm$\| lm " && arch="amd64"
+grep flags /proc/cpuinfo | grep " i386$\| i386 " && arch="i386"
+grep flags /proc/cpuinfo | grep " i686$\| i686 " && arch="i386"
+exec 1> /dev/tty
+if [ -z "$arch" ]; then
+  echo "CPU arch unknown"
+  exit 1
+else
+  echo "detected $arch"
 fi
 
 test -e /sys/firmware/efi && efi=1 || efi=0
