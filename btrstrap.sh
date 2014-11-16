@@ -48,6 +48,7 @@ if [ -z "`dpkg -l btrfs-tools`" -o -z "`dpkg -l debootstrap`" -o -z "`dpkg -l cu
 fi
 
 echo "*BTRSTRAP* Wiping $disk"
+swapoff -a
 sgdisk -Z /dev/${disk}
 dd if=/dev/zero of=/dev/${disk} bs=1K count=2M
 
