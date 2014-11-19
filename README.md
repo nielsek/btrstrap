@@ -1,3 +1,3 @@
-Only supporting Ubuntu atm.
+Download and run the script from a debian based liveusb, pxeboot or something similar.
 
-Run the script from a debian based liveusb or something similar.
+Installs ubuntu via. debootstrap until images are ready and packaged.
