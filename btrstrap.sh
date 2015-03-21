@@ -81,10 +81,10 @@ echo "*BTRSTRAP* Creating root subvolume and boot"
 mkdir /mnt/btrroot
 mount /dev/${disk}3 /mnt/btrroot
 cd /mnt/btrroot
-btrfs subvolume create ${suite}-root
+btrfs subvolume create @
 cd ..
 umount /dev/${disk}3
-mount -o subvol=${suite}-root /dev/${disk}3 /mnt/btrroot
+mount -o subvol=@ /dev/${disk}3 /mnt/btrroot
 mkdir /mnt/btrroot/boot
 mount /dev/${disk}2 /mnt/btrroot/boot
 if [ "$efi" = 1 ]; then
@@ -129,7 +129,7 @@ debootstrap --include="\
 echo "*BTRSTRAP* Creating configs"
 echo "$hostname" > etc/hostname
 
-echo "LABEL=btrpool / btrfs subvol=${suite}-root 0 0
+echo "LABEL=btrpool / btrfs subvol=@ 0 0
 /dev/${disk}2 /boot ext2 defaults 0 2" > etc/fstab
 if [ "$efi" = 1 ]; then
   echo "/dev/${disk}1 /boot/efi vfat defaults 0 1" >> etc/fstab
