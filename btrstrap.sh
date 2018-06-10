@@ -1,6 +1,6 @@
 #!/bin/sh
 
-suite="trusty"
+suite="bionic"
 
 while getopts "h:d:s:" opt; do
   case "$opt" in
@@ -99,30 +99,40 @@ repo=`echo "$repolist" | head -n1`
 
 debootstrap --include="\
     bash-completion,\
-    bind9-host,\
     btrfs-tools,\
     build-essential,\
     bzip2,\
+    ca-certificates,\
     cron,\
     curl,\
-    isc-dhcp-client,\
+    dmidecode,\
+    dnsutils,\
+    gnupg,\
     ${grubdeb},\
+    htop,\
+    initramfs-tools,\
     iptables,\
     iputils-ping,\
     less,\
     linux-image-generic,\
+    locales,\
     logrotate,\
     lsof,\
     man-db,\
     net-tools,\
-    ntp,\
+    netplan.io,\
     openssh-server,\
     parted,\
     postfix,\
+    psmisc,\
     rsync,\
     rsyslog,\
+    sysstat,\
+    systemd-sysv,\
+    tcpdump,\
     sudo,\
     telnet,\
+    tzdata,\
     vim,\
 " --variant=minbase --arch $arch $suite . $repo
 
@@ -135,22 +145,20 @@ if [ "$efi" = 1 ]; then
   echo "/dev/${disk}1 /boot/efi vfat defaults 0 1" >> etc/fstab
 fi
 
-echo "auto lo
-iface lo inet loopback
+echo "network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: yes
+      dhcp6: no
+      nameservers:
+        addresses: [1.1.1.1, 1.0.0.1]" > etc/netplan/01-netcfg.yaml
 
-auto eth0
-iface eth0 inet dhcp" > etc/network/interfaces
-
-echo "nameserver 8.8.8.8
-nameserver 8.8.4.4" > etc/resolv.conf
-
-chroot . /bin/bash -c "export LANGUAGE=en_US.UTF-8; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; locale-gen en_US.UTF-8; dpkg-reconfigure locales"
+chroot . /bin/bash -c "export LANGUAGE=en_US.UTF-8; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; locale-gen en_US.UTF-8; dpkg-reconfigure -f noninteractive locales"
 
 echo 'LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"' > etc/default/locale
-
-echo "Etc/UTC" > etc/timezone
-chroot . dpkg-reconfigure -f noninteractive tzdata
 
 echo 'APT::Install-Recommends "0";
 APT::Install-Suggests "0";' > etc/apt/apt.conf.d/99no-install-recommends
